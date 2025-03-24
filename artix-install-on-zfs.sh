@@ -204,6 +204,7 @@ efiswap || error "Error creating/formatting EFI/swap"
 
 installpkgs() {\
 	basestrap $INST_MNT - < pkglist.txt
+	basestrap $INST_MNT $INST_LINVAR
 }
 installpkgs || error "Error installing packages"
 
