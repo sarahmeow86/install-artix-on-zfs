@@ -60,6 +60,8 @@ inetutils
 intel-ucode
 inxi
 iptables
+linux
+linux-headers
 jfsutils
 leafpad
 libva-intel-driver
