@@ -66,7 +66,6 @@ libva-intel-driver
 libva-vdpau-driver
 lightdm-gtk-greeter
 lightdm-openrc
-linux-firmware
 logrotate
 lsb-release
 lvm2-openrc
