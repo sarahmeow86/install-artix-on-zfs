@@ -95,6 +95,7 @@ partdrive() {\
 	sgdisk -n2:0:+4G -t2:BE00 $DISK
 	sgdisk -n3:0:-8G -t3:BF00 $DISK
 	sgdisk -n4:0:0 -t4:8308 $DISK
+	partprobe || true
 }
 partdrive || error "Error setting up the drive!"
 
