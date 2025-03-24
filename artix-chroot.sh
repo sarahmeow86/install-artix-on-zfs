@@ -16,7 +16,7 @@ inststuff || error "Error installing packages"
 
 
 addlocales() {
-    printf "%s\n" "Enter your locale, you can skip it if you are using the us one e.g. "en_US.UTF-8 UTF-8" with quotes"
+    printf "%s\n" "Enter your locale, you can skip it if you are using the us one e.g. "en_US.UTF-8 UTF-8" without quotes"
     read alocale
     echo $alocale >> /etc/locale.gen 
     locale-gen
