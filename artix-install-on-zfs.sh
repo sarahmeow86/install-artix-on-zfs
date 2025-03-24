@@ -209,7 +209,10 @@ finishtouch() {\
 finishtouch || error "Something went wrong, export pools, unmount efi and swap, and re-run the script"
 
 exportpools() {
-	printf "%s\n" "Exporting pools"
+	printf "%s\n" "Unmounting partitions and exporting pools"
+	umount $INST_MNT/boot/efi
+	umount $INST_MNT/boot
+	swapoff $DISK-part4
 	zpool export bpool_${INST_UUID}
 	zpool export rpool_${INST_UUID}
 }
