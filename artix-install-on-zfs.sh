@@ -101,49 +101,14 @@ partdrive || error "Error setting up the drive!"
 
 bootpool() {\
 	printf "%s\n" "${bold}Creating boot pool"
-	zpool create -f \
-	-o ashift=12 \	
-	-d -o feature@async_destroy=enabled \
-	-o feature@bookmarks=enabled \
-	-o feature@embedded_data=enabled \
-	-o feature@empty_bpobj=enabled \
-	-o feature@enabled_txg=enabled \
-	-o feature@extensible_dataset=enabled \
-	-o feature@filesystem_limits=enabled \
-	-o feature@hole_birth=enabled \
-	-o feature@large_blocks=enabled \
-	-o feature@lz4_compress=enabled \
-	-o feature@spacemap_histogram=enabled \
-	-O acltype=posixacl \
-	-O canmount=off \
-	-O compression=lz4 \
-	-O devices=off \
-	-O normalization=formD \
-	-O relatime=on \
-	-O xattr=sa \
-	-O mountpoint=/boot \
-	-R $INST_MNT \
-	bpool_$INST_UUID \
-	$DISK-part2
+	zpool create -f -o ashift=12 -d -o feature@async_destroy=enabled -o feature@bookmarks=enabled -o feature@embedded_data=enabled -o feature@empty_bpobj=enabled -o feature@enabled_txg=enabled -o feature@extensible_dataset=enabled -o feature@filesystem_limits=enabled -o feature@hole_birth=enabled -o feature@large_blocks=enabled -o feature@lz4_compress=enabled -o feature@spacemap_histogram=enabled -O acltype=posixacl -O canmount=off -O compression=lz4 -O devices=off -O normalization=formD -O relatime=on -O xattr=sa -O mountpoint=/boot -R $INST_MNT bpool_$INST_UUID $DISK-part2
 }
 bootpool || error "Error setting up the boot pool"
 
 
 rootpool() {\
 	printf "%s\n" "${bold}Creating root pool"
-	zpool create -f \
-	-o ashift=12 \
-	-O acltype=posixacl \
-	-O canmount=off \
-	-O compression=zstd \
-	-O dnodesize=auto \
-	-O normalization=formD \
-	-O relatime=on \
-	-O xattr=sa \
-	-O mountpoint=/ \
-	-R $INST_MNT \
-	rpool_$INST_UUID \
-	$DISK-part3
+	zpool create -f -o ashift=12 -O acltype=posixacl -O canmount=off -O compression=zstd -O dnodesize=auto -O normalization=formD -O relatime=on -O xattr=sa -O mountpoint=/ -R $INST_MNT rpool_$INST_UUID $DISK-part3
 }
 rootpool || error "Error setting up the root pool"
 
