@@ -205,6 +205,10 @@ efiswap || error "Error creating/formatting EFI/swap"
 installpkgs() {\
 	basestrap $INST_MNT - < pkglist.txt
 	basestrap $INST_MNT $INST_LINVAR
+	rm -rf $INST_MNT/etc/pacman.d
+	rm $INST_MNT/etc/pacman.conf
+	cp -r /etc/pacman.d $INST_MNT/etc
+	cp /etc/pacman.conf $INST_MNT/etc
 }
 installpkgs || error "Error installing packages"
 
