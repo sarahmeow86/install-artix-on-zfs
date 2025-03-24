@@ -159,7 +159,7 @@ permissions || error "Wrong permissions!"
 
 efiswap() {\
 	printf "%s\n" "${bold}Formatting and mounting EFI system partition and swap"
-	mkswap -n SWAP ${DISK}-part4
+	mkswap -L SWAP ${DISK}-part4
 	swapon ${DISK}-part4
 	mkfs.vfat -n EFI ${DISK}-part1
 	mkdir $INST_MNT/boot/efi
