@@ -10,7 +10,7 @@ error() {\
 
 
 inststuff() {\
-    pacman -Sy --noconfirm --needed yay git base-devel fakeroot lightdm lighdm-openrc lightdm-gtk-greeter cinnamon brave-bin
+    pacman -Sy --noconfirm --needed yay git base-devel fakeroot lightdm lightdm-openrc lightdm-gtk-greeter cinnamon brave-bin
 }
 inststuff || error "Error installing packages"
 
