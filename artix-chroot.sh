@@ -35,7 +35,7 @@ USERADD || error "Error adding ${username} to your install"
 
 
 zfsservice() {\
-    su $username -c "cd && git clone https://aur.archlinux.org/zfs-openrc.git && cd zfs-openrc && makepkg -sri --noconfirm"
+    pacman -U --noconfirm /install/zfs-openrc-20241023-1-any.pkg.tar.zst
     rc-update add zfs-import boot
     rc-update add zfs-load-key boot
     rc-update add zfs-share boot

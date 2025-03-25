@@ -202,10 +202,13 @@ finishtouch() {\
 	echo "en_US.UTF-8 UTF-8" >> $INST_MNT/etc/locale.gen
 	echo "LANG=en_US.UTF-8" >> $INST_MNT/etc/locale.conf
 	artix-chroot $INST_MNT /bin/bash -c locale-gen
+	mkdir $INST_MNT/install
+	cp zfs-openrc-20241023-1-any.pkg.tar.zst $INST_MNT/install/
 	awk -v n=5 -v s="INST_UUID=${INST_UUID}" 'NR == n {print s} {print}' artix-chroot.sh > artix-chroot-new.sh
-	mv artix-chroot-new.sh $INST_MNT/artix-chroot.sh
-	chmod +x $INST_MNT/artix-chroot.sh
-	artix-chroot $INST_MNT /bin/bash -c $(declare -p $INST_UUID) ./artix-chroot.sh
+	mv artix-chroot-new.sh $INST_MNT/install/artix-chroot.sh
+	chmod +x $INST_MNT/install/artix-chroot.sh
+	artix-chroot $INST_MNT /bin/bash -c ./install/artix-chroot.sh
+	rm -rf $INST_MNT/install
 }
 finishtouch || error "Something went wrong, export pools, unmount efi and swap, and re-run the script"
 
