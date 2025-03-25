@@ -16,9 +16,9 @@ chaoticaur() {\
     pacman-key --lsign-key 3056513887B78AEB && \
        echo "Signing key for ${bold}[chaotic-aur]${normal}."
     pacman -Sy
-	yes | LC_ALL=en_US pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' && \
+	yes | LC_ALL=en_US.UTF-8 pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' && \
        echo "Installing keyring for ${bold}[chaotic-aur]${normal}."
-    yes | LC_ALL=en_US pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' && \
+    yes | LC_ALL=en_US.UTF-8 pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' && \
        echo "Installing mirrorlist for ${bold}chaotic-aur${normal}."
 }
 chaoticaur || error "Error installing Chaotic AUR!"
