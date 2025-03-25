@@ -207,7 +207,7 @@ finishtouch() {\
 	awk -v n=5 -v s="INST_UUID=${INST_UUID}" 'NR == n {print s} {print}' artix-chroot.sh > artix-chroot-new.sh
 	mv artix-chroot-new.sh $INST_MNT/install/artix-chroot.sh
 	chmod +x $INST_MNT/install/artix-chroot.sh
-	artix-chroot $INST_MNT /bin/bash -c ./install/artix-chroot.sh
+	artix-chroot $INST_MNT /bin/bash /install/artix-chroot.sh
 	rm -rf $INST_MNT/install
 }
 finishtouch || error "Something went wrong, export pools, unmount efi and swap, and re-run the script"
