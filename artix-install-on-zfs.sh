@@ -202,7 +202,8 @@ finishtouch() {\
 	echo "en_US.UTF-8 UTF-8" >> $INST_MNT/etc/locale.gen
 	echo "LANG=en_US.UTF-8" >> $INST_MNT/etc/locale.conf
 	artix-chroot $INST_MNT /bin/bash -c locale-gen
-	cp artix-chroot.sh $INST_MNT/
+	awk -v n=5 -v s="INST_UUID=${INST_UUID}" 'NR == n {print s} {print}' artix-chroot.sh > artix-chroot-new.sh
+	mv artix-chroot-new.sh $INST_MNT/artix-chroot.sh
 	chmod +x $INST_MNT/artix-chroot.sh
 	artix-chroot $INST_MNT /bin/bash -c $(declare -p $INST_UUID) ./artix-chroot.sh
 }
