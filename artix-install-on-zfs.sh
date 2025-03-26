@@ -99,6 +99,7 @@ swapdim() {\
 }
 swapdim || error "No size specified for swap"
 
+
 partdrive() {\
 	printf "%s\n" "${bold}Starting install, it will take time, so go GRUB a cup of coffee"
 	printf "%s\n" "${bold}Partitioning drive"
@@ -129,6 +130,7 @@ rootpool || error "Error setting up the root pool"
 createdatasets() {\
 	printf "%s\n" "${bold}Creating datasets"
 	zfs create -o canmount=off -o mountpoint=none rpool_$INST_UUID/DATA
+	zfs create -o mountpoint=/ -o canmount=on rpool_$INST_UUID/DATA/default
 }
 createdatasets || error "Error creating the datasets"
 
@@ -143,7 +145,6 @@ mountall || error "Error mounting partitions!"
 
 separate() {\
 	printf "%s\n" "${bold}Creating datasets to separate user data from root filesystem"
-	zfs create -o mountpoint=/ -o canmount=on rpool_$INST_UUID/DATA/default
 	zfs create -o mountpoint=/home -o canmount=on rpool_$INST_UUID/DATA/default/home
 }
 separate || error "Error settig up datasets!"
@@ -183,7 +184,7 @@ installpkgs || error "Error installing packages"
 
 
 fstab() {\
-	echo "UUID=$(blkid -s UUID -o value ${DISK}-part2) /boot     ext4 defaults   0 2" >> $INST_MNT/etc/fstab
+	echo "UUID=$(blkid -s UUID -o value ${DISK}-part2) /boot     ext4 defaults   					   0 2" >> $INST_MNT/etc/fstab
 	echo "UUID=$(blkid -s UUID -o value ${DISK}-part1) /boot/efi vfat umask=0022,fmask=0022,dmask=0022 0 1" >> $INST_MNT/etc/fstab
 	echo "UUID=$(blkid -s UUID -o value ${DISK}-part4) none		 swap defaults						   0 0" >> $INST_MNT/etc/fstab
 }
@@ -211,12 +212,12 @@ finishtouch() {\
 	mv artix-chroot-new.sh $INST_MNT/install/artix-chroot.sh
 	chmod +x $INST_MNT/install/artix-chroot.sh
 	artix-chroot $INST_MNT /bin/bash /install/artix-chroot.sh
-	rm -rf $INST_MNT/install
 }
 finishtouch || error "Something went wrong, re-run the script with correct values!" && exportpools 
 
 exportpools() {
 	printf "%s\n" "Unmounting partitions and exporting pools"
+	rm -rf $INST_MNT/install
 	umount $INST_MNT/boot/efi
 	umount $INST_MNT/boot
 	swapoff $DISK-part4
