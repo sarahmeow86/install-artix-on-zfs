@@ -198,7 +198,7 @@ mkinitram() {\
 	tee $INST_MNT/etc/mkinitcpio.conf <<EOF
 	HOOKS=(base udev autodetect modconf block keyboard zfs filesystems)
 EOF
-artix-chroot $INST_MNT mkinitcpio -P
+artix-chroot $INST_MNT /bin/bash -c mkinitcpio -P
 }
 mkinitram || error "Error creating new mkinitcpio"
 
