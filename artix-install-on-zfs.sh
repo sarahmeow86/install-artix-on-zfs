@@ -40,9 +40,9 @@ addrepo || error "Error adding repos!"
 installzfs() {\
 	printf "%s\n" "${bold}# Installing the zfs modules"
 	pacman -Sy --noconfirm --needed zfs-dkms-git zfs-utils-git gptfdisk artix-archlinux-support
-	echo " "; echo "#[extra-testing]"; echo "#Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
+	echo " "; echo "#[extra-testing]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
 	echo " "; echo "[extra]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
-	echo " "; echo "#[multilib-testing]"; echo "#Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
+	echo " "; echo "#[multilib-testing]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
 	echo " "; echo "[multilib]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
 	pacman -Sy
 	modprobe zfs
