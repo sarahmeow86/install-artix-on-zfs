@@ -16,7 +16,7 @@ inststuff || error "Error installing packages"
 
 
 addlocales() {
-    printf "%s\n" "Enter your locale, you can skip it if you are using the us one e.g. "en_US.UTF-8 UTF-8" without quotes"
+    printf "%s\n" "Enter your locale, you can skip it if you are using the us one e.g. "en_US.UTF-8 UTF-8""
     read alocale
     echo $alocale >> /etc/locale.gen 
     locale-gen
@@ -78,6 +78,13 @@ regenerate_initcpio() {
     mkinitcpio -P
 }
 regenerate_initcpio || error "Error generating initcpio!!"
+
+
+inst_grub() {
+    grub-install --efi-directory=/boot/efi
+    update-grub
+}
+inst_grub || error "Failed to install grub"
 
 
 printf "%s\n" "Finish!"

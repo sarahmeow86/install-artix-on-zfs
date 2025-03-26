@@ -25,19 +25,24 @@ chaoticaur || error "Error installing Chaotic AUR!"
 
 
 addrepo() {\
-    printf "%s\n" "## Adding repository to /etc/pacman.conf."
+    printf "%s\n" "## Adding repos to /etc/pacman.conf."
     # Adding chaotic-aur to pacman.conf
     printf "%s" "Adding repo " && printf "%s" "${bold}[chaotic-aur] " && printf "%s\n" "${normal}to /etc/pacman.conf."
     grep -qxF "[chaotic-aur]" /etc/pacman.conf ||
         ( echo " "; echo "[chaotic-aur]"; \
         echo "Include = /etc/pacman.d/chaotic-mirrorlist") | tee -a /etc/pacman.conf
+	 echo " "; echo "[omniverse]"; echo "Server = https://artix.sakamoto.pl/omniverse/\$arch"; echo "Server = https://eu-mirror.artixlinux.org/omniverse/\$arch" ; echo "Server = https://omniverse.artixlinux.org/\$arch" | tee -a /etc/pacman.conf
+	 sed -i 's/^#\(\[lib32\]\)/\1/; s/^#\(Include = \/etc\/pacman\.d\/mirrorlist\)/\1/' /etc/pacman.conf
 }
-addrepo || error "Error adding chaotic-aur repo!"
+addrepo || error "Error adding repos!"
 
 
 installzfs() {\
 	printf "%s\n" "${bold}# Installing the zfs modules"
-	pacman -Sy --noconfirm --needed zfs-dkms-git zfs-utils-git gptfdisk
+	pacman -Sy --noconfirm --needed zfs-dkms-git zfs-utils-git gptfdisk artix-archlinux-support
+	echo " "; echo "[extra]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
+	echo " "; echo "[multilib]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
+	pacman -Sy
 	modprobe zfs
 	printf "%s\n" "${bold}Done!"
 }
@@ -78,6 +83,7 @@ selectdisk() {\
 }
 selectdisk || error "Disk doesn't exist!"
 
+
 settingup() {\
 	printf "%s\n" "${bold}Creating temporary folder for installation"
 	INST_MNT=$(mktemp -d)
@@ -87,24 +93,30 @@ settingup() {\
 settingup || error "Setup not done"
 
 
+swapdim() {\
+	printf "%s\n" "${bold}Choose swap size"
+	read swsize
+}
+swapdim || error "No size specified for swap"
+
 partdrive() {\
 	printf "%s\n" "${bold}Starting install, it will take time, so go GRUB a cup of coffee"
 	printf "%s\n" "${bold}Partitioning drive"
 	sgdisk --zap-all $DISK
 	sgdisk -n1:0:+1G -t1:EF00 $DISK
 	sgdisk -n2:0:+4G -t2:BE00 $DISK
-	sgdisk -n3:0:-8G -t3:BF00 $DISK
+	sgdisk -n3:0:-{swsize}G -t3:BF00 $DISK
 	sgdisk -n4:0:0 -t4:8308 $DISK
 	partprobe || true
 }
 partdrive || error "Error setting up the drive!"
 
 
-bootpool() {\
-	printf "%s\n" "${bold}Creating boot pool"
-	zpool create -f -o ashift=12 -d -o feature@async_destroy=enabled -o feature@bookmarks=enabled -o feature@embedded_data=enabled -o feature@empty_bpobj=enabled -o feature@enabled_txg=enabled -o feature@extensible_dataset=enabled -o feature@filesystem_limits=enabled -o feature@hole_birth=enabled -o feature@large_blocks=enabled -o feature@lz4_compress=enabled -o feature@spacemap_histogram=enabled -O acltype=posixacl -O canmount=off -O compression=lz4 -O devices=off -O normalization=formD -O relatime=on -O xattr=sa -O mountpoint=/boot -R $INST_MNT bpool_$INST_UUID $DISK-part2
+bootpart() {\
+	printf "%s\n" "${bold}Creating boot partition in ext4"
+	mkfs.ext4 $DISK-part2
 }
-bootpool || error "Error setting up the boot pool"
+bootpart || error "Error setting up the boot partition"
 
 
 rootpool() {\
@@ -116,11 +128,7 @@ rootpool || error "Error setting up the root pool"
 
 createdatasets() {\
 	printf "%s\n" "${bold}Creating datasets"
-	zfs create -o canmount=off -o mountpoint=none bpool_$INST_UUID/BOOT
-	zfs create -o canmount=off -o mountpoint=none rpool_$INST_UUID/ROOT
 	zfs create -o canmount=off -o mountpoint=none rpool_$INST_UUID/DATA
-	zfs create -o mountpoint=legacy -o canmount=noauto bpool_$INST_UUID/BOOT/default
-	zfs create -o mountpoint=/      -o canmount=noauto rpool_$INST_UUID/ROOT/default
 }
 createdatasets || error "Error creating the datasets"
 
@@ -129,28 +137,22 @@ mountall() {\
 	printf "%s\n" "${bold}Mounting everything"
 	zfs mount rpool_$INST_UUID/ROOT/default
 	mkdir $INST_MNT/boot
-	mount -t zfs bpool_$INST_UUID/BOOT/default $INST_MNT/boot
 }
 mountall || error "Error mounting partitions!"
 
 
 separate() {\
 	printf "%s\n" "${bold}Creating datasets to separate user data from root filesystem"
-	zfs create -o mountpoint=/ -o canmount=off rpool_$INST_UUID/DATA/default
-	for i in {usr,var,var/lib};
-		do
-		zfs create -o canmount=off rpool_$INST_UUID/DATA/default/$i
-	done
-	for i in {home,root,srv,usr/local,var/log,var/spool,var/tmp};
-		do
-		zfs create -o canmount=on rpool_$INST_UUID/DATA/default/$i
-	done
+	zfs create -o mountpoint=/ -o canmount=on rpool_$INST_UUID/DATA/default
+	zfs create -o mountpoint=/home -o canmount=on rpool_$INST_UUID/DATA/default/home
 }
 separate || error "Error settig up datasets!"
 
 
 permissions() {\
 	printf "%s\n" "${bold}Giving correct permissions to /root and /var/tmp"
+	mkdir $INST_MNT/root
+	mkdir -p $INST_MNT/var/tmp
 	chmod 750 $INST_MNT/root
 	chmod 1777 $INST_MNT/var/tmp
 }
@@ -158,9 +160,10 @@ permissions || error "Wrong permissions!"
 
 
 efiswap() {\
-	printf "%s\n" "${bold}Formatting and mounting EFI system partition and swap"
+	printf "%s\n" "${bold}Formatting and mounting boot, EFI system partition and swap"
 	mkswap -L SWAP ${DISK}-part4
 	swapon ${DISK}-part4
+	mount ${DISK}-part2 $INST_MNT/boot
 	mkfs.vfat -n EFI ${DISK}-part1
 	mkdir $INST_MNT/boot/efi
 	mount -t vfat ${DISK}-part1 $INST_MNT/boot/efi
@@ -180,7 +183,7 @@ installpkgs || error "Error installing packages"
 
 
 fstab() {\
-	echo "bpool_$INST_UUID/BOOT/default /boot zfs rw,xattr,posixacl 0 0" >> $INST_MNT/etc/fstab
+	echo "UUID=$(blkid -s UUID -o value ${DISK}-part2) /boot     ext4 defaults   0 2" >> $INST_MNT/etc/fstab
 	echo "UUID=$(blkid -s UUID -o value ${DISK}-part1) /boot/efi vfat umask=0022,fmask=0022,dmask=0022 0 1" >> $INST_MNT/etc/fstab
 	echo "UUID=$(blkid -s UUID -o value ${DISK}-part4) none		 swap defaults						   0 0" >> $INST_MNT/etc/fstab
 }
@@ -210,16 +213,16 @@ finishtouch() {\
 	artix-chroot $INST_MNT /bin/bash /install/artix-chroot.sh
 	rm -rf $INST_MNT/install
 }
-finishtouch || error "Something went wrong, export pools, unmount efi and swap, and re-run the script"
+finishtouch || error "Something went wrong, re-run the script with correct values!" && exportpools 
 
 exportpools() {
 	printf "%s\n" "Unmounting partitions and exporting pools"
 	umount $INST_MNT/boot/efi
 	umount $INST_MNT/boot
 	swapoff $DISK-part4
-	zpool export bpool_${INST_UUID}
 	zpool export rpool_${INST_UUID}
 }
+exportpools || error "Something went wrong!"
 
 printf "%s\n" "${bold} You can reboot now!"
 printf "%s'n" "${bolderror}If you have any problem open an issue on this scripts repo!!"
