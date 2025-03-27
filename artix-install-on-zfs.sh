@@ -26,24 +26,15 @@ chaoticaur || error "Error installing Chaotic AUR!"
 
 addrepo() {\
     printf "%s\n" "## Adding repos to /etc/pacman.conf."
-    # Adding chaotic-aur to pacman.conf
-    printf "%s" "Adding repo " && printf "%s" "${bold}[chaotic-aur] " && printf "%s\n" "${normal}to /etc/pacman.conf."
-    grep -qxF "[chaotic-aur]" /etc/pacman.conf ||
-        ( echo " "; echo "[chaotic-aur]"; \
-        echo "Include = /etc/pacman.d/chaotic-mirrorlist") | tee -a /etc/pacman.conf
-	 echo " "; echo "[omniverse]"; echo "Server = https://artix.sakamoto.pl/omniverse/\$arch"; echo "Server = https://eu-mirror.artixlinux.org/omniverse/\$arch" ; echo "Server = https://omniverse.artixlinux.org/\$arch" | tee -a /etc/pacman.conf
-	 sed -i 's/^#\(\[lib32\]\)/\1/; s/^#\(Include = \/etc\/pacman\.d\/mirrorlist\)/\1/' /etc/pacman.conf
+	pacman -Sy artix-archlinux-support
+	cp pacman.conf /etc/
 }
 addrepo || error "Error adding repos!"
 
 
 installzfs() {\
 	printf "%s\n" "${bold}# Installing the zfs modules"
-	pacman -Sy --noconfirm --needed zfs-dkms-git zfs-utils-git gptfdisk artix-archlinux-support
-	echo " "; echo "#[extra-testing]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
-	echo " "; echo "[extra]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
-	echo " "; echo "#[multilib-testing]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
-	echo " "; echo "[multilib]"; echo "Include = /etc/pacman.d/mirrorlist-arch" | tee -a /etc/pacman.conf
+	pacman -Sy --noconfirm --needed zfs-dkms-git zfs-utils-git gptfdisk 
 	pacman -Sy
 	modprobe zfs
 	printf "%s\n" "${bold}Done!"
