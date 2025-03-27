@@ -86,20 +86,13 @@ settingup() {\
 settingup || error "Setup not done"
 
 
-swapdim() {\
-	printf "%s\n" "${bold}Choose swap size"
-	read swsize
-}
-swapdim || error "No size specified for swap"
-
-
 partdrive() {\
 	printf "%s\n" "${bold}Starting install, it will take time, so go GRUB a cup of coffee"
 	printf "%s\n" "${bold}Partitioning drive"
 	sgdisk --zap-all $DISK
 	sgdisk -n1:0:+1G -t1:EF00 $DISK
 	sgdisk -n2:0:+4G -t2:BE00 $DISK
-	sgdisk -n3:0:-{swsize}G -t3:BF00 $DISK
+	sgdisk -n3:0:-8G -t3:BF00 $DISK
 	sgdisk -n4:0:0 -t4:8308 $DISK
 	partprobe || true
 }
