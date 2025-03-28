@@ -31,7 +31,15 @@ USERADD() {\
     printf "%s\n" "Enter the account password\n"
     passwd $username
 }
-USERADD || error "Error adding ${username} to your install" 
+USERADD || error "Error adding ${username} to your install"
+
+
+zfsbootmenu() {
+    mkdir -p /efi/EFI/zbm
+    wget https://get.zfsbootmenu.org/latest.EFI -O /efi/EFI/zbm/zfsbootmenu.EFI
+    efibootmgr --disk ${DISK} --part 1 --create --label "ZFSBootMenu" --loader '\EFI\zbm\zfsbootmenu.EFI' --unicode "spl_hostid=$(hostid) zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid" --verbose
+}
+zfsbootmenu || error "Error installing zfsbootmenu!"
 
 
 zfsservice() {\
@@ -55,7 +63,7 @@ enableservices() {\
     rc-update add cronie default
     rc-update add elogind boot
 }
-enableservices || error "Error enabling Services"
+enableservices || error "Error enabling Services!"
 
 
 passwdroot() {\
@@ -79,11 +87,11 @@ regenerate_initcpio() {
 regenerate_initcpio || error "Error generating initcpio!!"
 
 
-inst_grub() {
-    grub-install --efi-directory=/boot/efi
-    update-grub
+inst_zbm() {
+    pacman -U --noconfirm install/zfsbootmenu-3.0.1-1-x86_64.pkg.tar.zst
+    
 }
-inst_grub || error "Failed to install grub"
+inst_zbm || error "Failed to install zbm"
 
 
 printf "%s\n" "Finish!"

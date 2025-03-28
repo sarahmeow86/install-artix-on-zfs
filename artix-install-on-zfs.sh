@@ -85,8 +85,7 @@ settingup() {\
 	printf "%s\n" "${bold}Giving your zpools a unique identifier"
 	INST_UUID=$(dd if=/dev/urandom of=/dev/stdout bs=1 count=100 2>/dev/null |tr -dc 'a-z0-9' | cut -c-6)
 }
-settingup || error "Setup not done"
-
+settingup 
 
 partdrive() {\
 	printf "%s\n" "${bold}Starting install, it will take time, so go GRUB a cup of coffee"
@@ -161,6 +160,16 @@ efiswap() {\
 efiswap || error "Error creating/formatting EFI/swap"
 
 
+exportpools() {
+	printf "%s\n" "Unmounting partitions and exporting pools"
+	rm -rf $INST_MNT/install
+	umount $INST_MNT/boot/efi
+	umount $INST_MNT/boot
+	swapoff $DISK-part4
+	zpool export rpool_${INST_UUID}
+}
+
+
 installpkgs() {\
 	basestrap $INST_MNT - < pkglist.txt
 	basestrap $INST_MNT $INST_LINVAR ${INST_LINVAR}-headers linux-firmware zfs-dkms-git zfs-utils-git
@@ -169,7 +178,7 @@ installpkgs() {\
 	cp -r /etc/pacman.d $INST_MNT/etc
 	cp /etc/pacman.conf $INST_MNT/etc
 }
-installpkgs || error "Error installing packages"
+installpkgs || error "Error installing packages" && exportpools
 
 
 fstab() {\
@@ -177,7 +186,7 @@ fstab() {\
 	echo "UUID=$(blkid -s UUID -o value ${DISK}-part1) /boot/efi vfat umask=0022,fmask=0022,dmask=0022 0 1" >> $INST_MNT/etc/fstab
 	echo "UUID=$(blkid -s UUID -o value ${DISK}-part4) none		 swap defaults						   0 0" >> $INST_MNT/etc/fstab
 }
-fstab || error "Error generating fstab"
+fstab || error "Error generating fstab" && exportpools
 
 
 mkinitram() {\
@@ -187,7 +196,7 @@ mkinitram() {\
 EOF
 artix-chroot $INST_MNT /bin/bash -c mkinitcpio -P || true
 }
-mkinitram || error "Error creating new mkinitcpio"
+mkinitram || error "Error creating new mkinitcpio" && exportpools
 
 
 finishtouch() {\
@@ -199,20 +208,15 @@ finishtouch() {\
 	mkdir $INST_MNT/install
 	cp zfs-openrc-20241023-1-any.pkg.tar.zst $INST_MNT/install/
 	awk -v n=5 -v s="INST_UUID=${INST_UUID}" 'NR == n {print s} {print}' artix-chroot.sh > artix-chroot-new.sh
-	mv artix-chroot-new.sh $INST_MNT/install/artix-chroot.sh
+	awk -v n=6 -v s="DISK=${DISK}" 'NR == n {print s} {print}' artix-chroot-new.sh > artix-chroot-new2.sh
+	rm artix-chroot-new.sh
+	mv artix-chroot-new2.sh $INST_MNT/install/artix-chroot.sh
 	chmod +x $INST_MNT/install/artix-chroot.sh
 	artix-chroot $INST_MNT /bin/bash /install/artix-chroot.sh
 }
 finishtouch || error "Something went wrong, re-run the script with correct values!" && exportpools 
 
-exportpools() {
-	printf "%s\n" "Unmounting partitions and exporting pools"
-	rm -rf $INST_MNT/install
-	umount $INST_MNT/boot/efi
-	umount $INST_MNT/boot
-	swapoff $DISK-part4
-	zpool export rpool_${INST_UUID}
-}
+
 exportpools || error "Something went wrong!"
 
 printf "%s\n" "${bold} You can reboot now!"
