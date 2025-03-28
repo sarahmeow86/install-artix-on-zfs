@@ -35,8 +35,10 @@ addrepo || error "Error adding repos!"
 installzfs() {\
 	printf "%s\n" "${bold}# Installing the zfs modules"
 	pacman -Sy --noconfirm --needed zfs-dkms-git zfs-utils-git gptfdisk 
-	pacman -Sy
+	pacman -U zfs-openrc-20241023-1-any.pkg.tar.zst
 	modprobe zfs
+	rc-update add zfs-zed boot
+	rc-service zfs-zed start
 	printf "%s\n" "${bold}Done!"
 }
 installzfs || error "Error installing zfs!"
@@ -115,8 +117,15 @@ rootpool || error "Error setting up the root pool"
 
 createdatasets() {\
 	printf "%s\n" "${bold}Creating datasets"
-	zfs create -o canmount=off -o mountpoint=none rpool_$INST_UUID/DATA
-	zfs create -o mountpoint=/ -o canmount=on rpool_$INST_UUID/DATA/default
+	zfs create -o mountpoint=none rpool_$INST_UUID/DATA
+	zfs create -o mountpoint=none rpool_$INST_UUID/ROOT
+	zfs create -o mountpoint=/ -o canmount=noauto rpool_$INST_UUID/ROOT/default
+	zfs create -o mountpoint=/home rpool_$INST_UUID/DATA/home
+	zfs create -o mountpoint=/var -o canmount=off rpool_$INST_UUID/var
+	zfs create rpool_$INST_UUID/var/log
+	zfs create -o mountpoint=/var/lib -o canmount=off rpool_$INST_UUID/var/lib
+	zpool export rpool_$INST_UUID
+	zpool import -R $INST_MNT rpool_$INST_UUID -N
 }
 createdatasets || error "Error creating the datasets"
 
@@ -124,16 +133,10 @@ createdatasets || error "Error creating the datasets"
 mountall() {\
 	printf "%s\n" "${bold}Mounting everything"
 	zfs mount rpool_$INST_UUID/ROOT/default
+	zfs mount -a
 	mkdir $INST_MNT/boot
 }
 mountall || error "Error mounting partitions!"
-
-
-separate() {\
-	printf "%s\n" "${bold}Creating datasets to separate user data from root filesystem"
-	zfs create -o mountpoint=/home -o canmount=on rpool_$INST_UUID/DATA/default/home
-}
-separate || error "Error settig up datasets!"
 
 
 permissions() {\
