@@ -182,9 +182,9 @@ installpkgs || error "Error installing packages" && exportpools
 
 
 fstab() {\
-	echo "UUID=$(blkid -s UUID -o value ${DISK}-part2) /boot     ext4 defaults   					   0 2" >> $INST_MNT/etc/fstab
-	echo "UUID=$(blkid -s UUID -o value ${DISK}-part1) /boot/efi vfat umask=0022,fmask=0022,dmask=0022 0 1" >> $INST_MNT/etc/fstab
-	echo "UUID=$(blkid -s UUID -o value ${DISK}-part4) none		 swap defaults						   0 0" >> $INST_MNT/etc/fstab
+	echo "UUID=$(blkid -s UUID -o value ${DISK}-part2) /boot     ext4 defaults   					   0 2" > $INST_MNT/etc/fstab
+	echo "UUID=$(blkid -s UUID -o value ${DISK}-part1) /boot/efi vfat umask=0022,fmask=0022,dmask=0022 0 1" > $INST_MNT/etc/fstab
+	echo "UUID=$(blkid -s UUID -o value ${DISK}-part4) none		 swap defaults						   0 0" > $INST_MNT/etc/fstab
 }
 fstab || error "Error generating fstab" && exportpools
 
