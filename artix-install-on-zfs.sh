@@ -26,7 +26,7 @@ chaoticaur || error "Error installing Chaotic AUR!"
 
 addrepo() {\
     printf "%s\n" "## Adding repos to /etc/pacman.conf."
-	pacman -Sy artix-archlinux-support
+	pacman -Sy --noconfirm artix-archlinux-support
 	cp pacman.conf /etc/
 }
 addrepo || error "Error adding repos!"
@@ -35,7 +35,7 @@ addrepo || error "Error adding repos!"
 installzfs() {\
 	printf "%s\n" "${bold}# Installing the zfs modules"
 	pacman -Sy --noconfirm --needed zfs-dkms-git zfs-utils-git gptfdisk 
-	pacman -U zfs-openrc-20241023-1-any.pkg.tar.zst
+	pacman -U --noconfirm zfs-openrc-20241023-1-any.pkg.tar.zst
 	modprobe zfs
 	rc-update add zfs-zed boot
 	rc-service zfs-zed start
@@ -123,8 +123,6 @@ createdatasets() {\
 	zfs create -o mountpoint=/var -o canmount=off rpool_$INST_UUID/var
 	zfs create rpool_$INST_UUID/var/log
 	zfs create -o mountpoint=/var/lib -o canmount=off rpool_$INST_UUID/var/lib
-	zpool export rpool_$INST_UUID
-	zpool import -R $INST_MNT rpool_$INST_UUID -N
 }
 createdatasets || error "Error creating the datasets"
 
