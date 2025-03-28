@@ -68,7 +68,6 @@ passwdroot || error "Wrong password!"
 cachefile() {
     printf "%s\n" "${bold}Creating cachefile to be included in initcpio"
     zpool set cachefile=/etc/zfs/zpool.cache rpool_$INST_UUID
-    zpool set cachefile=/etc/zfs/zpool.cache bpool_$INST_UUID
 }
 cachefile || error "Failed to generate cachefile"
 
