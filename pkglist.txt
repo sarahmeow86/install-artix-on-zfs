@@ -119,6 +119,7 @@ vulkan-intel
 vulkan-radeon
 vulkan-swrast
 webp-pixbuf-loader
+wget
 which
 wireless-regdb
 wpa_supplicant-openrc
