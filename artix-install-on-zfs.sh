@@ -158,16 +158,6 @@ efiswap() {\
 efiswap || error "Error creating/formatting EFI/swap"
 
 
-exportpools() {
-	printf "%s\n" "Unmounting partitions and exporting pools"
-	rm -rf $INST_MNT/install
-	umount $INST_MNT/boot/efi
-	umount $INST_MNT/boot
-	swapoff $DISK-part4
-	zpool export rpool_${INST_UUID}
-}
-
-
 installpkgs() {\
 	basestrap $INST_MNT - < pkglist.txt
 	basestrap $INST_MNT $INST_LINVAR ${INST_LINVAR}-headers linux-firmware zfs-dkms-git zfs-utils-git
@@ -215,6 +205,14 @@ finishtouch() {\
 finishtouch || error "Something went wrong, re-run the script with correct values!" && exportpools 
 
 
+exportpools() {
+	printf "%s\n" "Unmounting partitions and exporting pools"
+	rm -rf $INST_MNT/install
+	umount $INST_MNT/boot/efi
+	umount $INST_MNT/boot
+	swapoff $DISK-part4
+	zpool export rpool_${INST_UUID}
+}
 exportpools || error "Something went wrong!"
 
 printf "%s\n" "${bold} You can reboot now!"

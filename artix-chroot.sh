@@ -35,8 +35,8 @@ USERADD || error "Error adding ${username} to your install"
 
 
 zfsbootmenu() {
-    mkdir -p /efi/EFI/zbm
-    wget https://get.zfsbootmenu.org/latest.EFI -O /efi/EFI/zbm/zfsbootmenu.EFI
+    mkdir -p /boot/efi/EFI/zbm
+    wget https://get.zfsbootmenu.org/latest.EFI -O /boot/efi/EFI/zbm/zfsbootmenu.EFI
     efibootmgr --disk ${DISK} --part 1 --create --label "ZFSBootMenu" --loader '\EFI\zbm\zfsbootmenu.EFI' --unicode "spl_hostid=$(hostid) zbm.timeout=3 zbm.prefer=zroot zbm.import_policy=hostid" --verbose
 }
 zfsbootmenu || error "Error installing zfsbootmenu!"
