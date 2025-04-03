@@ -267,7 +267,7 @@ rootpool() {
         echo "Creating ZFS root pool..."; sleep 1
         zpool create -f -o ashift=12 -O acltype=posixacl -O canmount=off -O compression=zstd \
             -O dnodesize=auto -O normalization=formD -O relatime=on -O xattr=sa \
-            -O mountpoint=/ -R $INST_MNT rpool_$INST_UUID $DISK-part3 && echo "50"
+            -O mountpoint=/ -R $INST_MNT rpool_$INST_UUID $DISK-part2 && echo "50"
         sleep 1
         echo "Finalizing setup..."; sleep 1
         echo "100"
