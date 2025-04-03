@@ -100,7 +100,7 @@ installzfs() {
 installzfs || error "Error installing ZFS!"
 
 
-iinstalltz() {
+installtz() {
     printf "%s\n" "${bold}## Setting install variables"
 
     # Generate a list of regions from /usr/share/zoneinfo
