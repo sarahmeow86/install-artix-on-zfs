@@ -7,6 +7,11 @@ error() {\
     printf "%s\n" "${bolderror}ERROR:${normal}\\n%s\\n" "$1" >&2; exit 1;
 }
 
+if ! command -v dialog &> /dev/null; then
+    echo "dialog is not installed. Installing it now..."
+    pacman -Sy --noconfirm dialog || { echo "Failed to install dialog. Please install it manually."; exit 1; }
+fi
+
 
 check_root() {
     if [[ $EUID -ne 0 ]]; then
