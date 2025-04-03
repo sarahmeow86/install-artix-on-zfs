@@ -372,9 +372,14 @@ efiswap() {
         mkdir -p $INST_MNT/boot/efi && mount -t vfat ${DISK}-part1 $INST_MNT/boot/efi && echo "100"
     ) | dialog --gauge "Setting up EFI and swap partitions..." 10 70 0
 
-    # Check if the EFI partition and swap are set up correctly
-    if ! mount | grep -q "$INST_MNT/boot/efi" || ! swapon --show | grep -q "${DISK}-part3"; then
-        error "Error creating/formatting EFI/swap!"
+    # Check if the EFI partition is mounted
+    if ! mount | grep -q "$INST_MNT/boot/efi"; then
+        error "EFI partition is not mounted!"
+    fi
+
+    # Check if the swap partition is active
+    if ! swapon --show | grep -q "${DISK}-part3"; then
+        error "Swap partition is not active!"
     fi
 
     printf "%s\n" "${bold}EFI and swap partitions set up successfully!"
