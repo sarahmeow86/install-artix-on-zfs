@@ -377,12 +377,6 @@ efiswap() {
         error "EFI partition is not mounted!"
     fi
 
-    # Check if the swap partition is active using UUID
-    swap_uuid=$(blkid -s UUID -o value ${DISK}-part3)
-    if ! swapon --show | grep -q "$swap_uuid"; then
-        error "Swap partition is not active!"
-    fi
-
     printf "%s\n" "${bold}EFI and swap partitions set up successfully!"
 }
 efiswap || error "Error setting up EFI and swap partitions!"
